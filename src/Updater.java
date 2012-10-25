@@ -8,7 +8,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author yappy
@@ -33,8 +36,8 @@ public class Updater {
 		}
 	}
 
-	private static String getText(String strURL, Map<String, String> postData)
-			throws IOException {
+	private static InputStream openPost(String strURL,
+			Map<String, String> postData) throws IOException {
 		URL url = new URL(strURL);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("POST");
@@ -52,17 +55,29 @@ public class Updater {
 		try (Writer out = new OutputStreamWriter(con.getOutputStream())) {
 			out.write(postStr.toString());
 		}
-		try (InputStream in = con.getInputStream()) {
-			return readAll(in);
-		}
+		return con.getInputStream();
 	}
 
 	public static void main(String[] args) throws IOException {
 		// System.out.print(getText("http://yugioh-wiki.net/"));
 		Map<String, String> map = new TreeMap<>();
 		map.put("encode_hint", "ぷ");
-		map.put("word", "a");
-		System.out.println(getText("http://yugioh-wiki.net/?cmd=search", map));
+		map.put("word", "《");
+		try (InputStream in = openPost("http://yugioh-wiki.net/?cmd=search",
+				map)) {
+			Scanner sc = new Scanner(in, "JISAutoDetect");
+			Pattern p = Pattern
+					.compile("<a href=\"\"(.*)\"\"*.</string>(.*)》</a>");
+			while (sc.hasNextLine()) {
+				String line = sc.nextLine();
+				if (line.indexOf("《") != -1) {
+					Matcher m = p.matcher(line);
+					if(m.find()){
+						System.out.println(m.group());
+					}
+				}
+			}
+		}
 	}
 
 }
