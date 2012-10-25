@@ -2,12 +2,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -20,6 +21,9 @@ import java.util.regex.Pattern;
 public class Updater {
 
 	public static final String OUTPUT_FILE = "crawl.txt";
+
+	private static List<String> cardNames = new ArrayList<>();
+	private static List<String> cardURLs = new ArrayList<>();
 
 	private static String readAll(InputStream in) throws IOException {
 		char[] buf = new char[1024];
@@ -54,15 +58,12 @@ public class Updater {
 		return con.getInputStream();
 	}
 
-	public static void main(String[] args) throws IOException {
-		System.setOut(new PrintStream(OUTPUT_FILE));
-
-		// System.out.print(getText("http://yugioh-wiki.net/"));
-		Map<String, String> map = new TreeMap<>();
-		map.put("encode_hint", "ぷ");
-		map.put("word", "《");
+	private static void listAllCards() throws IOException {
+		Map<String, String> query = new TreeMap<>();
+		query.put("encode_hint", "ぷ");
+		query.put("word", "《");
 		try (Scanner sc = new Scanner(openPost(
-				"http://yugioh-wiki.net/?cmd=search", map), "JISAutoDetect")) {
+				"http://yugioh-wiki.net/?cmd=search", query), "JISAutoDetect")) {
 			Pattern p = Pattern
 					.compile("<a href=\"(.*)\"><strong.*</strong>(.*)》");
 			while (sc.hasNextLine()) {
@@ -70,11 +71,19 @@ public class Updater {
 				if (line.indexOf("《") != -1) {
 					Matcher m = p.matcher(line);
 					if (m.find()) {
-						System.out.println(m.group(1).replaceAll("&amp;", "&"));
-						System.out.println(m.group(2));
+						cardNames.add(m.group(1).replaceAll("&amp;", "&"));
+						cardURLs.add(m.group(2));
 					}
 				}
 			}
+		}
+	}
+
+	public static void main(String[] args) {
+		try {
+			listAllCards();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
