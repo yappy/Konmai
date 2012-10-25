@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
@@ -18,6 +19,8 @@ import java.util.regex.Pattern;
  */
 public class Updater {
 
+	public static final String OUTPUT_FILE = "crawl.txt";
+
 	private static String readAll(InputStream in) throws IOException {
 		char[] buf = new char[1024];
 		int len;
@@ -27,13 +30,6 @@ public class Updater {
 			builder.append(buf, 0, len);
 		}
 		return builder.toString();
-	}
-
-	private static String getText(String strURL) throws IOException {
-		URL url = new URL(strURL);
-		try (InputStream in = url.openStream()) {
-			return readAll(in);
-		}
 	}
 
 	private static InputStream openPost(String strURL,
@@ -59,21 +55,23 @@ public class Updater {
 	}
 
 	public static void main(String[] args) throws IOException {
+		System.setOut(new PrintStream(OUTPUT_FILE));
+
 		// System.out.print(getText("http://yugioh-wiki.net/"));
 		Map<String, String> map = new TreeMap<>();
 		map.put("encode_hint", "ぷ");
 		map.put("word", "《");
-		try (InputStream in = openPost("http://yugioh-wiki.net/?cmd=search",
-				map)) {
-			Scanner sc = new Scanner(in, "JISAutoDetect");
+		try (Scanner sc = new Scanner(openPost(
+				"http://yugioh-wiki.net/?cmd=search", map), "JISAutoDetect")) {
 			Pattern p = Pattern
-					.compile("<a href=\"\"(.*)\"\"*.</string>(.*)》</a>");
+					.compile("<a href=\"(.*)\"><strong.*</strong>(.*)》");
 			while (sc.hasNextLine()) {
 				String line = sc.nextLine();
 				if (line.indexOf("《") != -1) {
 					Matcher m = p.matcher(line);
-					if(m.find()){
-						System.out.println(m.group());
+					if (m.find()) {
+						System.out.println(m.group(1).replaceAll("&amp;", "&"));
+						System.out.println(m.group(2));
 					}
 				}
 			}
