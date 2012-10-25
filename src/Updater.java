@@ -59,6 +59,9 @@ public class Updater {
 	}
 
 	private static void listAllCards() throws IOException {
+		System.out.println("Creating card list...");
+		long start = System.currentTimeMillis();
+
 		Map<String, String> query = new TreeMap<>();
 		query.put("encode_hint", "ぷ");
 		query.put("word", "《");
@@ -77,6 +80,8 @@ public class Updater {
 				}
 			}
 		}
+		System.out.printf("Creating card list succeeded (%d, %dms)%n",
+				cardNames.size(), System.currentTimeMillis() - start);
 	}
 
 	public static void main(String[] args) {
