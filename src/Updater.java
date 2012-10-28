@@ -22,6 +22,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+
 /**
  * @author yappy
  */
@@ -125,6 +127,9 @@ public class Updater {
 			updateIndex++;
 			try {
 				String htmlText = readAll(new URL(data.getUrl()).openStream());
+				Files.copy(
+						new ByteInputStream(htmlText.getBytes(), htmlText
+								.getBytes().length), Paths.get("sample.html"));
 				System.err.println(htmlText);
 				Matcher m = FAQ_P.matcher(htmlText);
 				while (m.find()) {
