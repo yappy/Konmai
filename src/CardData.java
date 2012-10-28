@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * @author yappy
@@ -23,6 +24,11 @@ public class CardData implements Comparable<CardData>, Serializable {
 	@Override
 	public int compareTo(CardData o) {
 		return this.name.compareTo(o.name);
+	}
+
+	@Override
+	public String toString() {
+		return name + ", " + url + "," + Arrays.toString(texts);
 	}
 
 	public String getName() {

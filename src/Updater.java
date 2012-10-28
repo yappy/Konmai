@@ -1,4 +1,6 @@
+import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +32,7 @@ public class Updater {
 	public static final String DATABASE_FILE = "database.xml";
 	public static final String BACKUP_FILE = "backup.xml";
 
+	private static Timer timer;
 	private static List<CardData> cardData = new ArrayList<>();
 
 	private static void writeList() throws IOException {
@@ -38,7 +43,7 @@ public class Updater {
 		// write > data
 		try (XMLEncoder out = new XMLEncoder(
 				new FileOutputStream(DATABASE_FILE))) {
-			out.writeObject(cardData.toArray());
+			out.writeObject(cardData);
 		}
 	}
 
@@ -75,7 +80,7 @@ public class Updater {
 		return con.getInputStream();
 	}
 
-	private static void listAllCards() throws IOException {
+	private static void getAllCards() throws IOException {
 		System.out.println("Creating card list...");
 		long start = System.currentTimeMillis();
 
@@ -91,8 +96,8 @@ public class Updater {
 				if (line.indexOf("《") != -1) {
 					Matcher m = p.matcher(line);
 					if (m.find()) {
-						String name = m.group(1).replaceAll("&amp;", "&");
-						String url = m.group(2);
+						String name = m.group(2).replaceAll("&amp;", "&");
+						String url = m.group(1).replaceAll("&amp;", "&");
 						cardData.add(new CardData(name, url));
 					}
 				}
@@ -102,13 +107,47 @@ public class Updater {
 				cardData.size(), System.currentTimeMillis() - start);
 	}
 
+	private static int updateIndex = 0;
+
+	private static class UpdateTask extends TimerTask {
+
+		@Override
+		public void run() {
+			if (endCheck())
+				return;
+			while (cardData.get(updateIndex).getTexts() != null) {
+				updateIndex = (updateIndex + 1) % cardData.size();
+			}
+			CardData data = cardData.get(updateIndex);
+			System.out.println(data);
+			try {
+				String htmlText = readAll(new URL(data.getUrl()).openStream());
+				System.out.println(htmlText);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			timer.cancel();
+		}
+
+		private boolean endCheck() {
+			for (CardData data : cardData) {
+				if (data.getTexts() == null)
+					return false;
+			}
+			return true;
+		}
+
+	}
+
 	public static void main(String[] args) {
 		try {
-			listAllCards();
+			getAllCards();
 			writeList();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		timer = new Timer(false);
+		timer.scheduleAtFixedRate(new UpdateTask(), 0, 1000);
 	}
-
 }
