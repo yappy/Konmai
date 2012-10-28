@@ -130,6 +130,7 @@ public class Updater {
 				while (m.find()) {
 					String text = m.group(1).replace('\n', ' ');
 					text = text.replaceAll(" 　　", "");
+					text = text.replaceAll("調整中。", "調整中");
 					text = text.replaceAll("<(\"[^\"]*\"|'[^']*'|[^'\">])*>",
 							"");
 					if (text.indexOf("調整中") != -1) {
