@@ -1,3 +1,5 @@
+import java.beans.XMLEncoder;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -7,6 +9,9 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +25,22 @@ import java.util.regex.Pattern;
  */
 public class Updater {
 
-	public static final String OUTPUT_FILE = "crawl.txt";
+	public static final String DATABASE_FILE = "database.xml";
+	public static final String BACKUP_FILE = "backup.xml";
 
 	private static List<CardData> cardData = new ArrayList<>();
+
+	private static void writeList() throws IOException {
+		// mv data backup
+		Files.move(Paths.get(DATABASE_FILE), Paths.get(BACKUP_FILE),
+				StandardCopyOption.REPLACE_EXISTING,
+				StandardCopyOption.ATOMIC_MOVE);
+		// write > data
+		try (XMLEncoder out = new XMLEncoder(
+				new FileOutputStream(DATABASE_FILE))) {
+			out.writeObject(cardData.toArray());
+		}
+	}
 
 	private static String readAll(InputStream in) throws IOException {
 		char[] buf = new char[1024];
@@ -87,6 +105,7 @@ public class Updater {
 	public static void main(String[] args) {
 		try {
 			listAllCards();
+			writeList();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

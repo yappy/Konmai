@@ -11,6 +11,9 @@ public class CardData implements Comparable<CardData>, Serializable {
 	private String url;
 	private String[] texts;
 
+	public CardData() {
+	}
+
 	public CardData(String name, String url) {
 		this.name = name;
 		this.url = url;
