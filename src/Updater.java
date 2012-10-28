@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  */
 public class Updater {
 
-	public static final long TIMER_PERIOD = 5000;
+	private static final long TIMER_PERIOD = 5000;
 	public static final String DATABASE_FILE = "database.xml";
 	public static final String BACKUP_FILE = "backup.xml";
 
@@ -129,6 +129,7 @@ public class Updater {
 				Matcher m = FAQ_P.matcher(htmlText);
 				while (m.find()) {
 					String text = m.group(1).replace('\n', ' ');
+					text = text.replaceAll(" 　　", "");
 					text = text.replaceAll("<(\"[^\"]*\"|'[^']*'|[^'\">])*>",
 							"");
 					if (text.indexOf("調整中") != -1) {
