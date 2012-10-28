@@ -116,8 +116,6 @@ public class Updater {
 
 		@Override
 		public void run() {
-			if (endCheck())
-				return;
 			while (cardData.get(updateIndex).getTexts() != null) {
 				updateIndex = (updateIndex + 1) % cardData.size();
 			}
@@ -143,8 +141,10 @@ public class Updater {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			if (endCheck())
+			if (endCheck()) {
+				System.out.println("Finish!");
 				timer.cancel();
+			}
 		}
 
 		private boolean endCheck() {
