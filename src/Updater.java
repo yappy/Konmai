@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
  */
 public class Updater {
 
+	public static final long TIMER_PERIOD = 5000;
 	public static final String DATABASE_FILE = "database.xml";
 	public static final String BACKUP_FILE = "backup.xml";
 
@@ -164,7 +165,7 @@ public class Updater {
 			e.printStackTrace();
 		}
 		timer = new Timer(false);
-		timer.scheduleAtFixedRate(new UpdateTask(), 0, 10000);
+		timer.scheduleAtFixedRate(new UpdateTask(), 0, TIMER_PERIOD);
 	}
 
 }
