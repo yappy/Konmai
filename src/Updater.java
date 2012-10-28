@@ -1,6 +1,4 @@
-import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,18 +33,13 @@ public class Updater {
 	private static Timer timer;
 	private static List<CardData> cardData = new ArrayList<>();
 
-	@SuppressWarnings("unchecked")
-	private static void loadList() throws IOException {
-		try (XMLDecoder in = new XMLDecoder(new FileInputStream(DATABASE_FILE))) {
-			cardData = (List<CardData>) in.readObject();
-		}
-	}
-
 	private static void writeList() throws IOException {
 		// mv data backup
-		Files.move(Paths.get(DATABASE_FILE), Paths.get(BACKUP_FILE),
-				StandardCopyOption.REPLACE_EXISTING,
-				StandardCopyOption.ATOMIC_MOVE);
+		if (Files.exists(Paths.get(DATABASE_FILE))) {
+			Files.move(Paths.get(DATABASE_FILE), Paths.get(BACKUP_FILE),
+					StandardCopyOption.REPLACE_EXISTING,
+					StandardCopyOption.ATOMIC_MOVE);
+		}
 		// write > data
 		try (XMLEncoder out = new XMLEncoder(
 				new FileOutputStream(DATABASE_FILE))) {
@@ -93,11 +86,10 @@ public class Updater {
 
 		Map<String, String> query = new TreeMap<>();
 		query.put("encode_hint", "ぷ");
-		query.put("word", "《");
+		query.put("word", "調整中");
 		try (Scanner sc = new Scanner(openPost(
 				"http://yugioh-wiki.net/?cmd=search", query), "JISAutoDetect")) {
-			Pattern p = Pattern
-					.compile("<a href=\"(.*)\"><strong.*</strong>(.*)》");
+			Pattern p = Pattern.compile("<a href=\"(.*)\">.*《(.*)》");
 			while (sc.hasNextLine()) {
 				String line = sc.nextLine();
 				if (line.indexOf("《") != -1) {
@@ -114,8 +106,7 @@ public class Updater {
 				cardData.size(), System.currentTimeMillis() - start);
 	}
 
-	// TODO quick end for test
-	private static int updateIndex = 101; // 0;
+	private static int updateIndex = 0;
 
 	private static class UpdateTask extends TimerTask {
 
@@ -135,21 +126,23 @@ public class Updater {
 			updateIndex++;
 			try {
 				String htmlText = readAll(new URL(data.getUrl()).openStream());
+				List<String> faqs = new ArrayList<>();
 				Matcher m = FAQ_P.matcher(htmlText);
 				while (m.find()) {
 					String text = m.group(1).replace('\n', ' ');
 					text = text.replaceAll("<(\"[^\"]*\"|'[^']*'|[^'\">])*>",
 							"");
-					System.out.println(text);
+					if (text.indexOf("調整中") != -1) {
+						faqs.add(text);
+						System.out.println(text);
+					}
 				}
+				data.setTexts(faqs.toArray(new String[0]));
+				writeList();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 			if (endCheck())
-				timer.cancel();
-			// TODO quick end for test
-			if (updateIndex >= 110)
 				timer.cancel();
 		}
 
@@ -165,17 +158,13 @@ public class Updater {
 
 	public static void main(String[] args) {
 		try {
-			if (Files.exists(Paths.get(DATABASE_FILE))) {
-				loadList();
-			} else {
-				getAllCards();
-			}
+			getAllCards();
 			writeList();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		timer = new Timer(false);
-		timer.scheduleAtFixedRate(new UpdateTask(), 0, 1000);
+		timer.scheduleAtFixedRate(new UpdateTask(), 0, 10000);
 	}
 
 }
