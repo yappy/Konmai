@@ -20,9 +20,10 @@ public class Faq {
 				| Pattern.DOTALL);
 		Matcher m = FAQ_P.matcher(sb.toString());
 		while (m.find()) {
+			String text = m.group(1).replace('\n', ' ');
 			System.out.println("find");
-			System.out.println(m.group());
+			System.out.println(text);
+			System.out.println(text.replaceAll("<(\"[^\"]*\"|'[^']*'|[^'\">])*>", ""));
 		}
 	}
-
 }
