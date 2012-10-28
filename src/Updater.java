@@ -1,6 +1,4 @@
-import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,9 +105,12 @@ public class Updater {
 				cardData.size(), System.currentTimeMillis() - start);
 	}
 
-	private static int updateIndex = 0;
+	// TODO quick end for test
+	private static int updateIndex = 101; // 0;
 
 	private static class UpdateTask extends TimerTask {
+
+		private static final Pattern FAQ_P = Pattern.compile("<p>Ｑ：(.*)</p>");
 
 		@Override
 		public void run() {
@@ -119,15 +120,26 @@ public class Updater {
 				updateIndex = (updateIndex + 1) % cardData.size();
 			}
 			CardData data = cardData.get(updateIndex);
-			System.out.println(data);
+			System.out.printf("Process %d/%d: %s%n", updateIndex + 1,
+					cardData.size(), data);
+			updateIndex++;
 			try {
 				String htmlText = readAll(new URL(data.getUrl()).openStream());
-				System.out.println(htmlText);
+				System.err.println(htmlText);
+				Matcher m = FAQ_P.matcher(htmlText);
+				while (m.find()) {
+					String text = m.group(1);
+					System.out.println(text);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
-			timer.cancel();
+			if (endCheck())
+				timer.cancel();
+			// TODO quick end for test
+			if (updateIndex >= 102)
+				timer.cancel();
 		}
 
 		private boolean endCheck() {
