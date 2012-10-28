@@ -138,7 +138,8 @@ public class Updater {
 				Matcher m = FAQ_P.matcher(htmlText);
 				while (m.find()) {
 					String text = m.group(1).replace('\n', ' ');
-					text = text.replaceAll("<(\"[^\"]*\"|'[^']*'|[^'\">])*>", "");
+					text = text.replaceAll("<(\"[^\"]*\"|'[^']*'|[^'\">])*>",
+							"");
 					System.out.println(text);
 				}
 			} catch (IOException e) {
@@ -176,4 +177,5 @@ public class Updater {
 		timer = new Timer(false);
 		timer.scheduleAtFixedRate(new UpdateTask(), 0, 1000);
 	}
+
 }
