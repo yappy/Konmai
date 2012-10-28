@@ -21,10 +21,12 @@ public class Faq {
 		Matcher m = FAQ_P.matcher(sb.toString());
 		while (m.find()) {
 			String text = m.group(1).replace('\n', ' ');
+			text = text.replaceAll("<(\"[^\"]*\"|'[^']*'|[^'\">])*>", "");
 			System.out.println("find");
-			System.out.println(text);
-			System.out.println(text.replaceAll(
-					"<(\"[^\"]*\"|'[^']*'|[^'\">])*>", ""));
+			if (text.indexOf("調整中") != -1) {
+				System.out.println(text);
+				System.out.println(text.length());
+			}
 		}
 	}
 
