@@ -23,7 +23,9 @@ public class Faq {
 			String text = m.group(1).replace('\n', ' ');
 			System.out.println("find");
 			System.out.println(text);
-			System.out.println(text.replaceAll("<(\"[^\"]*\"|'[^']*'|[^'\">])*>", ""));
+			System.out.println(text.replaceAll(
+					"<(\"[^\"]*\"|'[^']*'|[^'\">])*>", ""));
 		}
 	}
+
 }
