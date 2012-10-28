@@ -22,8 +22,7 @@ public class Updater {
 
 	public static final String OUTPUT_FILE = "crawl.txt";
 
-	private static List<String> cardNames = new ArrayList<>();
-	private static List<String> cardURLs = new ArrayList<>();
+	private static List<CardData> cardData = new ArrayList<>();
 
 	private static String readAll(InputStream in) throws IOException {
 		char[] buf = new char[1024];
@@ -74,14 +73,15 @@ public class Updater {
 				if (line.indexOf("《") != -1) {
 					Matcher m = p.matcher(line);
 					if (m.find()) {
-						cardNames.add(m.group(1).replaceAll("&amp;", "&"));
-						cardURLs.add(m.group(2));
+						String name = m.group(1).replaceAll("&amp;", "&");
+						String url = m.group(2);
+						cardData.add(new CardData(name, url));
 					}
 				}
 			}
 		}
 		System.out.printf("Creating card list succeeded (%d, %dms)%n",
-				cardNames.size(), System.currentTimeMillis() - start);
+				cardData.size(), System.currentTimeMillis() - start);
 	}
 
 	public static void main(String[] args) {
