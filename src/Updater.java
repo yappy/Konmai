@@ -1,4 +1,6 @@
+import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,8 +24,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
-
 /**
  * @author yappy
  */
@@ -34,6 +34,13 @@ public class Updater {
 
 	private static Timer timer;
 	private static List<CardData> cardData = new ArrayList<>();
+
+	@SuppressWarnings("unchecked")
+	private static void loadList() throws IOException {
+		try (XMLDecoder in = new XMLDecoder(new FileInputStream(DATABASE_FILE))) {
+			cardData = (List<CardData>) in.readObject();
+		}
+	}
 
 	private static void writeList() throws IOException {
 		// mv data backup
@@ -112,7 +119,8 @@ public class Updater {
 
 	private static class UpdateTask extends TimerTask {
 
-		private static final Pattern FAQ_P = Pattern.compile("<p>Ｑ：(.*)</p>");
+		private static final Pattern FAQ_P = Pattern.compile("<p>(Ｑ：.*?)</p>",
+				Pattern.MULTILINE | Pattern.DOTALL);
 
 		@Override
 		public void run() {
@@ -127,13 +135,9 @@ public class Updater {
 			updateIndex++;
 			try {
 				String htmlText = readAll(new URL(data.getUrl()).openStream());
-				Files.copy(
-						new ByteInputStream(htmlText.getBytes(), htmlText
-								.getBytes().length), Paths.get("sample.html"));
-				System.err.println(htmlText);
 				Matcher m = FAQ_P.matcher(htmlText);
 				while (m.find()) {
-					String text = m.group(1);
+					String text = m.group(1).replace('\n', ' ');
 					System.out.println(text);
 				}
 			} catch (IOException e) {
@@ -159,7 +163,11 @@ public class Updater {
 
 	public static void main(String[] args) {
 		try {
-			getAllCards();
+			if (Files.exists(Paths.get(DATABASE_FILE))) {
+				loadList();
+			} else {
+				getAllCards();
+			}
 			writeList();
 		} catch (IOException e) {
 			e.printStackTrace();
