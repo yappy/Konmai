@@ -15,15 +15,25 @@ public class Analyze {
 				Updater.DATABASE_FILE))) {
 			list = (List<CardData>) in.readObject();
 		}
-		int[] table = new int[50];
+
+		final int TWEET_MAX = 140;
+		int all = 0;
+		int msgok = 0;
+		int msgnameok = 0;
 		for (CardData card : list) {
+			String name = "《" + card.getName() + "》 ";
 			for (String text : card.getTexts()) {
-				table[text.length() / 10]++;
+				if (text.length() + name.length() < TWEET_MAX) {
+					msgnameok++;
+				}
+				if (text.length() < TWEET_MAX) {
+					msgok++;
+				}
+				all++;
 			}
 		}
-		for (int i = 0; i < table.length; i++) {
-			System.out.printf("%3d..%3d: %d%n", i * 10, i * 10 + 9, table[i]);
-		}
+		System.out.printf("tweet OK: %d/%d%n", msgok, all);
+		System.out.printf("name + tweet OK: %d/%d%n", msgnameok, all);
 	}
 
 }
