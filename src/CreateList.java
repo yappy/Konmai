@@ -2,6 +2,7 @@ import java.beans.XMLDecoder;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,7 +18,8 @@ public class CreateList {
 			list = (List<CardData>) in.readObject();
 		}
 
-		System.setOut(new PrintStream("list.txt"));
+		String fileName = String.format("list%1$tY%1$tm%1$td.txt", new Date());
+		System.setOut(new PrintStream(fileName));
 
 		final int TWEET_MAX = 140;
 		for (CardData card : list) {
