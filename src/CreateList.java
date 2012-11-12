@@ -28,7 +28,7 @@ public class CreateList {
 				if (text.length() + name.length() < TWEET_MAX) {
 					System.out.println(name + text);
 				} else if (text.length() < TWEET_MAX) {
-					System.out.println(text);
+					System.err.println(text);
 				} else {
 					System.err.println(text);
 				}
