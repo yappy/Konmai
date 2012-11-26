@@ -21,6 +21,7 @@ public class CreateList {
 		}
 
 		String fileName = String.format("list%1$tY%1$tm%1$td.txt", new Date());
+		System.setProperty("line.separator", "\r\n");
 		System.setOut(new PrintStream(fileName, "UTF-8"));
 
 		final int TWEET_MAX = 140;
