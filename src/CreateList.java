@@ -40,6 +40,8 @@ public class CreateList {
 		}
 		Collections.sort(result);
 		for (String tw : result) {
+			// 0x2212 full-width minus
+			tw = tw.replace('\u2212', '－');
 			System.out.println(tw);
 		}
 	}
