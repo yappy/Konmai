@@ -160,6 +160,12 @@ public class Updater {
 	}
 
 	public static void main(String[] args) {
+		if (args.length >= 2) {
+			System.setProperty("proxySet", "true");
+			System.setProperty("proxyHost", args[0]);
+			System.setProperty("proxyPort", args[1]);
+			System.out.printf("Set proxy: %s:%s%n", args[0], args[1]);
+		}
 		try {
 			getAllCards();
 			writeList();
